@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Spelling Fun App</title>
+<style>
+body {
+  font-family: "Comic Sans MS", Arial;
+  background: #fef6e4;
+  text-align: center;
+}
+.container {
+  max-width: 700px;
+  margin: auto;
+  padding: 20px;
+}
+h1 {
+  color: #ff6f61;
+}
+textarea {
+  width: 90%;
+  height: 80px;
+  font-size: 16px;
+}
+input {
+  font-size: 24px;
+  padding: 10px;
+  text-align: center;
+}
+button {
+  padding: 10px 15px;
+  margin: 5px;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.load { background: #4cc9f0; color: white; }
+.submit { background: #06d6a0; color: white; }
+.replay { background: #ffd166; }
+.result { font-size: 20px; margin-top: 10px; }
+.score { font-size: 18px; margin-top: 10px; }
+</style>
+</head>
+
+<body>
+<div class="container">
+  <h1>🌈 Spelling Fun Time!</h1>
+
+  <textarea id="wordsInput" placeholder="Enter words, comma separated"></textarea><br>
+  <button class="load" onclick="loadWords()">📥 Load Words</button>
+
+  <h2>✏️ Type what you hear</h2>
+  <input id="answer" placeholder="Type here" onkeypress="handleEnter(event)"><br>
+
+  <button class="submit" onclick="submit()">Submit</button>
+  <button class="replay" onclick="replay()">🔊 Replay</button>
+
+  <div class="result" id="result"></div>
+  <div class="score" id="score">Score: 0</div>
+</div>
+
+<script>
+let words = [];
+let index = 0;
+let started = false;
+let score = 0;
+
+function speak(word) {
+  const msg = new SpeechSynthesisUtterance(word);
+  msg.lang = "en-GB";
+  speechSynthesis.cancel(); // stop previous speech
+  speechSynthesis.speak(msg);
+}
+
+function loadWords() {
+  words = document.getElementById("wordsInput").value
+    .split(",")
+    .map(w => w.trim())
+    .filter(w => w);
+
+  index = 0;
+  started = false;
+  score = 0;
+
+  document.getElementById("result").innerText = "Press ENTER to hear first word";
+  document.getElementById("score").innerText = "Score: 0";
+  document.getElementById("answer").focus();
+}
+
+function submit() {
+  if (words.length === 0) {
+    document.getElementById("result").innerText = "No words loaded";
+    return;
+  }
+
+  if (!started) {
+    started = true;
+    document.getElementById("result").innerText = "🎧 Listen...";
+    speak(words[index]);
+    return;
+  }
+
+  const user = document.getElementById("answer").value.trim();
+  document.getElementById("answer").value = "";
+
+  if (user.toLowerCase() === words[index].toLowerCase()) {
+    score++;
+    document.getElementById("score").innerText = "Score: " + score;
+    document.getElementById("result").innerText = "✅ Correct";
+
+    index++;
+    if (index < words.length) {
+      speak(words[index]);
+    } else {
+      document.getElementById("result").innerText = "🎉 Finished!";
+    }
+  } else {
+    document.getElementById("result").innerText = "❌ Try again";
+    speak(words[index]);
+  }
+}
+
+function replay() {
+  if (words.length > 0 && index < words.length) {
+    speak(words[index]);
+  }
+}
+
+function handleEnter(e) {
+  if (e.key === "Enter") {
+    submit();
+  }
+}
+</script>
+</body>
+</html>
